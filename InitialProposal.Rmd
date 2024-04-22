@@ -1,0 +1,213 @@
+---
+title: "FIFA FOOTBALL FANATICS - GroupS"
+author: James Street, Sarah Fatihi, Sophie Diop
+output:
+  pdf_document:
+    fig_height: 3
+    fig_width: 5
+  html_document:
+    fig_height: 3
+    fig_width: 5
+  word_document:
+    fig_height: 3
+    fig_width: 5
+date: "02-26-2024"
+---
+
+```{r setup, include=FALSE}
+#libraries
+library(robotstxt)
+library(rvest)
+library(purrr)
+library(polite)
+library(Stat2Data)
+library(dplyr)
+library(mosaic)
+library(tidyverse)
+library(ggplot2)
+library(gridExtra)
+
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(tidy = F, # display code as typed
+                      size = "small", # slightly smaller code font
+                      message = FALSE,
+                      warning = FALSE,
+                      comment = "\t") 
+
+# set black & white default plot theme
+theme_set(theme_classic())
+
+# improve digit and NA display 
+options(scipen = 1, knitr.kable.NA = '')
+
+#data
+FIFA <- read.csv("data/player_stats.csv")
+```
+
+PURPOSE: 
+
+We want to study FIFA Stats in comparison to live soccer data. Our goal is to predict transfer market value from FIFA stats. Are FIFA stats accurate in predicting transfer market value? What are the best and worst predictors of transfer market value? FIFA uses six core predictors in determining a soccer players ability, are these predictors the best at determining transfer market value?
+
+DATA: The FIFA Football Players dataset, https://www.kaggle.com/datasets/rehandl23/fifa-24-player-stats-dataset, is a comprehensive collection of information about football (soccer) players from around the world. This dataset offers a wealth of attributes related to each player, making it a valuable resource for various analyses and insights into the realm of football, both for gaming enthusiasts and real-world sports enthusiasts. The data is based on the game FIFA 24 which contains information on soccer players from over 19,000 fully licensed players, 700 teams, and 30 leagues in the year 2023-2024.We are planning on slimming down this data to only include players in the premier league. Our financial dataset which contains information of players transfer value was scraped from: "https://www.transfermarkt.co.uk/premier-league/transfers/wettbewerb/GB1/plus/?saison_id=2023&s_w=&leihe=0&intern=0&intern=1". The site is made for football fans and contains tranfer related football stats and history statistics for over 100 men's and women's club and national team competitions. This transfer data was taken from the most recent summer transfer window before the 2023/2024 season, and included all players who were signed by premier league teams within this period for a transfer fee.
+
+
+```{r, include=FALSE}
+url <- "https://www.transfermarkt.co.uk/premier-league/transfers/wettbewerb/GB1/plus/?saison_id=2023&s_w=&leihe=0&intern=0&intern=1"
+
+# 2. Confirm bots are allowed to access the page 
+paths_allowed(url)
+
+# 3. Scrape tables on the page
+tables <- url %>%
+  read_html() %>%
+  html_elements("table") #html_nodes can work as well, elements is newer
+
+# 4. Identify and "pluck" tables you want to work with
+table1 <- pluck(tables, 2) %>% 
+  html_table()
+
+table2 <- pluck(tables, 4) %>% 
+  html_table()
+
+table3 <- pluck(tables, 6) %>% 
+  html_table()
+
+table4 <- pluck(tables, 8) %>% 
+  html_table()
+
+table5<- pluck(tables, 10) %>% 
+  html_table()
+
+table6<- pluck(tables, 12) %>% 
+  html_table()
+
+table7<- pluck(tables, 14) %>% 
+  html_table()
+
+table8<- pluck(tables, 16) %>% 
+  html_table()
+
+table9<- pluck(tables, 18) %>% 
+  html_table()
+
+table10<- pluck(tables, 20) %>% 
+  html_table()
+
+table11<- pluck(tables, 22) %>% 
+  html_table()
+
+table12<- pluck(tables, 24) %>% 
+  html_table()
+
+table13<- pluck(tables, 26) %>% 
+  html_table()
+
+table14<- pluck(tables, 28) %>% 
+  html_table()
+
+table15<- pluck(tables, 30) %>% 
+  html_table()
+
+table16<- pluck(tables, 32) %>% 
+  html_table()
+
+table17<- pluck(tables, 34) %>% 
+  html_table()
+
+table18<- pluck(tables, 36) %>% 
+  html_table()
+
+table19<- pluck(tables, 38) %>% 
+  html_table()
+
+table20<- pluck(tables, 40) %>% 
+  html_table()
+
+table_list <- list()
+
+for (i in seq(2, length(tables), by = 2)) {
+  table <- tables[i] %>% html_table()
+  table_list[[length(table_list) + 1]] <- table
+}
+transfer_table <- bind_rows(table_list, .id = "source_table")
+
+# Optionally, you can assign meaningful names to the tables
+names(transfer_table) <- paste0("table", seq_along(table_list))
+```
+
+
+```{r}
+transfer_table1 <- transfer_table %>%
+  select(table2, table3, table5, table7, table9, table10) %>%
+  rename(
+    "Name" = table2,
+    "Age" = table3,
+    "Position" = table5,
+    "ExpectedValue" = table7,
+    "Seller" = table9,
+    "TransferPrice" = table10
+    
+  ) %>%
+  mutate(Expected_Value2 = parse_number(ExpectedValue)) %>%
+  mutate(TransferPrice2 = parse_number(TransferPrice))
+#Case_when command was recommended to us in STD fellows
+experiment <- transfer_table1 %>%
+  mutate(Expected_Value3 = case_when(str_detect(ExpectedValue, "k") ~ Expected_Value2/1000, TRUE ~ Expected_Value2))
+
+experiment2 <- experiment %>%
+  mutate(TransferPrice3 = 
+           case_when(str_detect(TransferPrice, "k") ~ TransferPrice2/1000, TRUE ~ TransferPrice2))
+
+Final_Graph <- experiment2 %>%
+  select(Name, Age, Position, Expected_Value3, TransferPrice3) %>%
+  rename(
+    "Expected Value (Millions)" = Expected_Value3,
+    "Transfer Price (Millions)" = TransferPrice3
+  )
+```
+
+POPULATION: We want to be able to generalize our conclusions to all soccer players in the Premier League. The Premier League is the English soccer league that is comprised of 20 clubs. In order to do this we will need to filter down our data sets to only include only players active in the league as to avoid extrapolation. 
+
+RESPONSE VARIABLE: Our response is transfer value - quantitatively measures how desirable of a player they are in terms of money in (millions of) euros. The transfer value distribution is right skewed and unimodal with a median of 17.15 and an IQR of 22.88265.
+
+
+```{r}
+gf_histogram(~ `Transfer Price (Millions)`, data = Final_Graph)
+favstats(~ `Transfer Price (Millions)`, data = Final_Graph)
+```
+
+
+EXPLANATORY VARIABLES: 
+Below is a list of the explanatory variables we intend on using:
+Club - This predictor is the club that the soccer player plays on. The premiere league contains 20 different clubs. These include, Aresenal, Aston Villa, Bournemouth, Brentford, Brighton, Burnley, Chelsea, Crystal Palace, Everton, Fulham, Liverpool, Luton Town, Man. City, Manchester Utd, Newcastle, Nottingham, Sheffield Utd, Tottenham, West Ham, and Wolves.
+Short Passing - This is a measure at how good the soccer player is at short passing in real time performance on a scale of 0-100 determined by the people working at FIFA.
+Shot Power - This is a measure at how powerful the soccer player's shot is in real time performance on a scale of 0-100 determined by the people working at FIFA.
+Dribbling - This is a measure at how good the soccer player is at dribbling in real time performance on a scale of 0-100 determined by the people working at FIFA.
+Tackles - This is a measure at how good the soccer player is at tackling in real time performance on a scale of 0-100 determined by the people working at FIFA.
+Physicality - This is a measure at how physical the soccer player is in real time performance on a scale of 0-100 determined by the people working at FIFA.
+Sprint Speed - This is a measure at how fast the soccer player is in real time performance on a scale of 0-100 determined by the people working at FIFA.
+
+The short pass distribution is left skewed and unimodal with a median of 63 and an IQR of 13. The shot power distribution is relatively normal and unimodal with a potential second peak. The mean is 58.18268 and a standard deviation of 12,97192. The dribbling distribution is left skewed and bimodal with a median of 62 and an IQR of 17. The stand tackle distribution is left skewed and bimodal with a median of 57 and an IQR of 36. The sprint speed distribution is left skewed and unimodal with a potential second peak. The median is 68 and an IQR of 18. Due to the overwhelming number of clubs in our current data set we can not determining the skew or modality of the distribution and our stats appear as NA. 
+
+```{r}
+m1 <- gf_histogram(~ short_pass, data = FIFA)
+favstats(~ short_pass, data = FIFA)
+
+m2 <- gf_histogram(~ shot_power, data = FIFA)
+favstats(~ shot_power, data = FIFA)
+
+m3 <- gf_histogram(~ dribbling, data = FIFA)
+favstats(~ dribbling, data = FIFA)
+
+m4 <- gf_histogram(~ stand_tackle, data = FIFA)
+favstats(~ stand_tackle, data = FIFA)
+
+m5 <- gf_histogram(~ sprint_speed, data = FIFA)
+favstats(~ sprint_speed, data = FIFA)
+
+m6 <- ggplot(FIFA, aes(x=club))+
+  geom_bar()
+
+grid.arrange(m1, m2, m3, m4, m5, m6, ncol=2) 
+```
+

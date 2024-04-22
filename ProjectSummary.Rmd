@@ -1,0 +1,114 @@
+---
+title: "ProjectSummary"
+output: pdf_document
+date: "2024-04-22"
+---
+
+```{r setup, include=FALSE}
+#Libraries and Data Sets
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(mosaic)
+library(Stat2Data)
+library(leaps)
+library(broom)
+library(rvest)
+library(methods)
+library(GGally)
+options(digits = 6)
+
+players <- readRDS("data/player_data.rds")
+
+#UNIVARIATE ANALYSIS
+#Quantitative Variables
+ggplot(players, aes(x = pace)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)
+favstats(~ pace, data = players)
+
+ggplot(players, aes(x = shooting)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)
+favstats(~ shooting, data = players)
+
+ggplot(players, aes(x = passing)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)
+favstats(~ passing, data = players)
+
+ggplot(players, aes(x = dribbling)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)
+favstats(~ dribbling, data = players)
+
+ggplot(players, aes(x = defending)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)
+favstats(~ defending, data = players)
+
+ggplot(players, aes(x = physic)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)
+favstats(~ physic, data = players)
+
+#Qualitative Variables
+ggplot(players, aes(x = club_name)) +
+  geom_bar(fill = "skyblue", color = "blue")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+```
+
+```{r}
+#BIVARAITE ANALYSIS
+#Quantitative Variables
+ggplot(players, aes(x = pace, y = value_eur)) +
+  geom_point()
+
+ggplot(players, aes(x = shooting, y = value_eur)) +
+  geom_point()
+
+ggplot(players, aes(x = passing, y = value_eur)) +
+  geom_point()
+
+ggplot(players, aes(x = dribbling, y = value_eur)) +
+  geom_point()
+
+ggplot(players, aes(x = defending, y = value_eur)) +
+  geom_point()
+
+ggplot(players, aes(x = physic, y = value_eur)) +
+  geom_point()
+
+#Qualitative Variable
+ggplot(players, aes(x = club_name, y = value_eur)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+#GGPairs
+players2 <- select(players, "pace", "shooting", "passing", "dribbling", "defending", "physic", "value_eur")
+ggpairs(players2)
+```
+
+```{r}
+#MULTIPLE LINEAR REGRESSION
+kitchen_sink <- lm(value_eur ~ pace + shooting + passing + dribbling + defending + physic + club_name, data = players)
+```
+
+```{r}
+#Model Summary
+msummary(kitchen_sink)
+
+#Bestsubsets
+best <- regsubsets(value_eur ~ pace + shooting + passing + dribbling  + defending + physic, data = players, nbest = 1)
+with(summary(best), data.frame(rsq, cp, outmat))
+
+#Multicollinearity
+car::vif(kitchen_sink)
+
+#Diagnostic plots
+mplot(kitchen_sink, which = 1)
+mplot(kitchen_sink, which = 2)
+
+
+#Model without dribbling
+mod2 <-  lm(value_eur ~ pace + shooting + passing + defending + physic, data = players)
+mplot(mod2, which = 1)
+mplot(mod2, which = 2)
+
+best2 <- regsubsets(value_eur ~ pace + shooting + passing + defending + physic, data = players, nbest = 1)
+with(summary(best2), data.frame(rsq, cp, outmat))
+```

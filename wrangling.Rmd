@@ -1,0 +1,23 @@
+---
+title: "wrangling"
+output: html_document
+date: "2024-04-12"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(dplyr)
+
+players <- read.csv("data/male_players.csv")
+
+players <- players |>
+  filter(league_name == "Premier League") |>
+  filter(club_name %in% c("Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton & Hove Albion", "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fullham", "Liverpool", "Luton Town", "Manchester City", "Manchester United", "Newcastle United", "Nottingham Forest", "Sheffield United", "Tottenham Hotspur", "West Ham United", "Wolverhampton Wanderers")) |>
+  filter(player_positions != "GK") |>
+  select(player_id, short_name, long_name, overall, club_name, pace, shooting, passing, dribbling, defending, physic, value_eur, player_positions)
+
+players <- players |>
+  na.omit(players)
+
+write_rds(players, file = "player_data.rds")
+```
