@@ -1,0 +1,102 @@
+---
+title: "Group S Final Report"
+author: "Sarah Fatihi, Sophie Diop, James Street" 
+output: pdf_document
+date: "2024-05-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(digits = 6)
+
+#Libraries 
+library(tidyverse)
+library(mosaic)
+library(broom)
+library(rvest)
+library(GGally)
+library(gridExtra)
+
+#Data Sets 
+players <- readRDS("data/player_data.rds")
+```
+
+## Abstract
+
+## Background and Meaning 
+
+## Methods
+
+## Results 
+
+### Univariate Descriptive Stats and Figures
+```{r, echo=FALSE, results='hide'}
+#UNIVARIATE ANALYSIS
+#Quantitative Variables
+ggplot(players, aes(x = value_eur)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5) +
+  labs(title = "Distribution of Value (in Euros)", x = "Players' Values (in euros)")
+
+ev1 <- ggplot(players, aes(x = pace)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)+
+  labs(title = "Distribution of Pace", x = "Players' Pace Rating")
+
+ev2 <- ggplot(players, aes(x = shooting)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)+
+  labs(title = "Distribution of Shooting", x = "Players' Shooting Rating")
+favstats(~ shooting, data = players)
+
+ev3 <- ggplot(players, aes(x = passing)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)+
+  labs(title = "Distribution of Passing", x = "Players' Passing Rating")
+
+ev4 <- ggplot(players, aes(x = dribbling)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)+
+  labs(title = "Distribution of Dribbling", x = "Players' Dribbling Rating")
+
+ev5 <- ggplot(players, aes(x = defending)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)+
+  labs(title = "Distribution of Defending", x = "Players' Defending Rating")
+
+ev6 <- ggplot(players, aes(x = physic)) +
+  geom_density(fill = "skyblue", color = "blue", alpha = 0.5)+
+  labs(title = "Distribution of Physicality", x = "Players' Physicality Rating")
+
+#Qualitative Variables
+ggplot(players, aes(x = club_name)) +
+  geom_bar(fill = "skyblue", color = "blue") +
+  labs(title = "Distribution of Clubs", x = "Clubs") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+#FAVSTATS
+favstats(~ pace, data = players)
+favstats(~ shooting, data = players)
+favstats(~ passing, data = players)
+favstats(~ dribbling, data = players)
+favstats(~ defending, data = players)
+favstats(~ physic, data = players)
+```
+
+```{r, echo=FALSE, results='hide'}
+#DISPLAYED GRAPHS
+grid.arrange(ev1, ev2, ev3, ev4, ev5, ev6, ncol=3) 
+```
+
+Pace: The ratings of players' pace is left-skewed, so we use the median of 71 as a measure of center, and the IQR of 13.75 (first quartile = 64.25, third quartile = 78) as a measure of spread. 
+
+Shooting: The ratings of players' shooting is left-skewed, so we use the median of 61 as a measure of center, and the IQR of 24 (first quartile = 47, third quartile = 71) as a measure of spread. 
+
+Passing: The ratings of players' shooting has a slight left-skew, so we use the median of 67 as a measure of center, and the IQR of 14 (first quartile = 59, third quartile = 73) as a measure of spread.
+
+Dribbling: The ratings of players' dribbling is left-skewed, so we use the median of 72 as a measure of center, and the IQR of 12 (first quartile = 65, third quartile = 77) as a measure of spread.
+
+Defending: The ratings of players' defending is left-skewed with a potential second peak, so we use the median of 66 as a measure of center, and the IQR of 29 (first quartile = 46, third quartile = 75) as a measure of spread.
+
+Physicality: The ratings of players' physicality is left-skewed, so we use the median of 71 as a measure of center, and the IQR of 13 (first quartile = 63, third quartile = 76) as a measure of spread.
+
+### Bivaraite Analysis
+
+## Interpreting the Model 
+
+## Conclusion 
+

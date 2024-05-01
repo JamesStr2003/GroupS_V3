@@ -111,4 +111,18 @@ mplot(mod2, which = 2)
 
 best2 <- regsubsets(value_eur ~ pace + shooting + passing + defending + physic, data = players, nbest = 1)
 with(summary(best2), data.frame(rsq, cp, outmat))
+
+#Model with log (It works, going to use 4 variables)
+players3 <- players |>
+  mutate(log_val = log(value_eur))
+
+mod3 <-  lm(log_val ~ pace + shooting + passing + dribbling  + defending + physic, data = players3)
+
+
+mplot(mod3, which = 1)
+mplot(mod3, which = 2)
+
+best3 <- regsubsets(log_val ~ pace + shooting + passing + dribbling  + defending + physic, data = players3, nbest = 1)
+with(summary(best3), data.frame(rsq, cp, outmat))
+
 ```
