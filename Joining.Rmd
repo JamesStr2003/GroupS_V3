@@ -1,0 +1,26 @@
+---
+title: "Joining"
+author: "James Street"
+date: "2024-05-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(robotstxt)
+library(rvest)
+library(purrr)
+library(polite)
+library(Stat2Data)
+library(dplyr)
+library(mosaic)
+library(tidyverse)
+library(ggplot2)
+library(gridExtra)
+```
+
+```{r}
+read.
+```
+
