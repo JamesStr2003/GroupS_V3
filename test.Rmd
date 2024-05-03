@@ -71,6 +71,10 @@ mlr_attacker <- lm(TransferPrice ~ pace + shooting + passing + dribbling + defen
 summary(mlr_defender)
 summary(mlr_midfielder)
 summary(mlr_attacker)
+
+#plots
+mplot(mlr_attacker, which = 1)
+mplot(mlr_attacker, which = 2)
 ```
 
 ```{r}

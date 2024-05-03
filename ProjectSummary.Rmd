@@ -97,11 +97,11 @@ best <- regsubsets(value_eur ~ pace + shooting + passing + dribbling  + defendin
 with(summary(best), data.frame(rsq, cp, outmat))
 
 #Multicollinearity
-car::vif(kitchen_sink)
+car::vif(best3)
 
 #Diagnostic plots
-mplot(kitchen_sink, which = 1)
-mplot(kitchen_sink, which = 2)
+mplot(best, which = 1)
+mplot(mod3, which = 2)
 
 
 #Model without dribbling
@@ -116,13 +116,54 @@ with(summary(best2), data.frame(rsq, cp, outmat))
 players3 <- players |>
   mutate(log_val = log(value_eur))
 
-mod3 <-  lm(log_val ~ pace + shooting + passing + dribbling  + defending + physic, data = players3)
+mod3 <-  lm(log_val ~ pace + shooting + passing + physic, data = players3)
 
+msummary(mod3)
 
 mplot(mod3, which = 1)
 mplot(mod3, which = 2)
 
-best3 <- regsubsets(log_val ~ pace + shooting + passing + dribbling  + defending + physic, data = players3, nbest = 1)
+best3 <- regsubsets(log_val ~ pace + shooting + passing + physic, data = players3, nbest = 1)
 with(summary(best3), data.frame(rsq, cp, outmat))
+
+car::vif(mod3)
+
+## BIG KITCHEN SINK 
+bigkitch <- lm(log_val ~ pace + shooting + passing + physic + dribbling + defending + player_group, data = players3)
+
+msummary(bigkitch)
+
+mplot(bigkitch, which = 1)
+mplot(bigkitch, which = 2)
+
+best4 <- regsubsets(log_val ~ pace + shooting + passing + physic + dribbling + defending + player_group, data = players3, nbest = 1)
+with(summary(best4), data.frame(rsq, cp, outmat))
+
+car::vif(bigkitch)
+
+#smaller models? 
+attackers <- players3 %>% 
+  filter(player_group == "Attacker")
+
+bigkitch1 <- lm(log_val ~ passing + shooting + pace + physic + dribbling + defending,  data = players3)
+
+msummary(bigkitch1)
+
+mplot(bigkitch1, which = 1)
+mplot(bigkitch1, which = 2)
+
+best5 <- regsubsets(log_val ~ pace + shooting + passing + physic + dribbling + defending, data = attackers, nbest = 1)
+with(summary(best5), data.frame(rsq, cp, outmat))
+
+car::vif(bigkitch1)
+
+defenders <- players %>% 
+  filter(player_group == "Defender")
+
+midfielders <- players %>% 
+  filter(player_group == "Midfeilder")
+
+
+
 
 ```

@@ -1,3 +1,4 @@
+
 ---
 title: "wrangling"
 output: html_document
@@ -15,7 +16,16 @@ players <- players |>
   filter(club_name %in% c("Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton & Hove Albion", "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fullham", "Liverpool", "Luton Town", "Manchester City", "Manchester United", "Newcastle United", "Nottingham Forest", "Sheffield United", "Tottenham Hotspur", "West Ham United", "Wolverhampton Wanderers")) |>
   filter(player_positions != "GK") |>
   filter(update_as_of == "2023-09-22") |>
-  select(player_id, short_name, long_name, overall, club_name, pace, shooting, passing, dribbling, defending, physic, value_eur, player_positions)
+  select(player_id, short_name, long_name, overall, club_name, pace, shooting, passing, dribbling, defending, physic, value_eur, player_positions) |> 
+ mutate(player_positions = sub(",.*", "", player_positions)) |> #only keeps players first position (only 4 conflict)
+ mutate(player_group = case_when(
+    player_positions %in% c("CF", "SS", "ST", "LW", "RW") ~ "Attacker",
+    player_positions %in% c("LM", "LCM", "CM", "RCM", "RM", "CDM", "CAM") ~ "Midfielder",
+    player_positions %in% c("LWB", "LB", "LCB", "CB", "RCB", "RB", "RWB", "SW") ~ "Defender",
+    TRUE ~ "Unknown"
+  ))
+
+tally(~ player_group, data = players)
 
 players <- players |>
   na.omit(players)
