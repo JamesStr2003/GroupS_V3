@@ -148,9 +148,9 @@ Figure 1 : To conduct bivariate analysis for the quantitative we made scatterplo
 players2 <- select(players, "pace", "shooting", "passing", "dribbling", "defending", "physic")
 ggpairs(players2)
 
-car::vif
 ```
-Figure 2 : This ggpairs model shows that some of our variables within our dataset are highly correlated with eachother. This is especially true for dribbling-passing, dribbling-shooting, passing-shooting and defending-physic. 
+Figure 2 : This ggpairs model shows that some of our variables within our dataset are highly correlated with eachother. This is especially true for dribbling-passing, dribbling-shooting, passing-shooting and defending-physic. This is concerning and we would need to look into running a multicollinearity test to decide which of our variables are over the threshold of multicollinearity
+
 ## Interpreting the Model
 
 
