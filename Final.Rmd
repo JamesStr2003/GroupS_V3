@@ -136,15 +136,15 @@ f <- ggplot(players, aes(x = physic, y = value_eur)) +
 grid.arrange(a,b,c,d,e,f)
 
 ```
-Figure 1 : To conduct bivariate analysis for the quantitative we made scatterplots of them as predictors of market value. We   
+Figure 1 : To conduct bivariate analysis for the quantitative we made scatterplots of them as predictors of market value. We saw that there seems to be positive relationships between all the variables and transfer value. In other words, as a rating for a variable goes up, so does the transfer value. However, we can also see that none of these relationships seem to be linear and instead seem to be curved. This suggests that we need to do a transformation is needed to satisfy our linearity condition  
 
 ```{r}
-players2 <- select(players, "pace", "shooting", "passing", "dribbling", "defending", "physic", "value_eur")
+players2 <- select(players, "pace", "shooting", "passing", "dribbling", "defending", "physic")
 ggpairs(players2)
 
 car::vif
 ```
-
+Figure 2 : This ggpairs model shows that some of our variables within our dataset are highly correlated with eachother. This is especially true for dribbling-passing, dribbling-shooting, passing-shooting and defending-physic. 
 ## Interpreting the Model
 
 
