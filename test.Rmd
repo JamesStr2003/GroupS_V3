@@ -32,21 +32,23 @@ transfer <- transfer %>%
 transfer_noGK <- transfer %>%
                       filter(Position != "Goalkeeper")
 
-test <- inner_join(transfer_noGK, stats, by = "short_name")
+Final_Combined <- inner_join(transfer_noGK, stats, by = "short_name")
 
-colnames(test)[3] <- "TransferPrice"
+colnames(Final_Combined)[3] <- "TransferPrice"
+
+write.csv(Final_Combined, file = "Final_Combined.csv")
 
 missing <- anti_join(transfer_noGK, stats, by = "short_name")
 
-defender <- test %>%
+defender <- Final_Combined %>%
               filter(Position == "Defender")
 
 # Create a dataset for midfielders
-midfielder <- test %>%
+midfielder <- Final_Combined %>%
                 filter(Position == "Midfielder")
 
 # Create a dataset for attackers
-attacker <- test %>%
+attacker <- Final_Combined %>%
               filter(Position == "Attacker")
 
 
@@ -139,7 +141,29 @@ midfielder_regression <- perform_simple_regression(midfielder)
 for (i in 1:6) {
   print(summary(midfielder_regression[[i]]))
 }
+
+
 ```
+
+```{r}
+regression_test <- midfielder %>%
+  select(TransferPrice, shooting, pace, dribbling, defending, physic, passing)
+
+model <- lm(TransferPrice ~ shooting + pace + dribbling + defending + physic + passing, data = regression_test)
+
+msummary(model)
+
+model2 <- lm(TransferPrice ~ shooting + pace + dribbling + defending + passing, data = regression_test)
+
+msummary(model2)
+
+model3 <- lm(TransferPrice ~ shooting + pace + defending + passing, data = regression_test)
+
+msummary(model3)
+
+# Perform automated variable selection
+```
+
 
 ```{r}
 perform_simple_regression <- function(attacker) {
@@ -173,5 +197,107 @@ attacker_regression <- perform_simple_regression(attacker)
 for (i in 1:6) {
   print(summary(attacker_regression[[i]]))
 }
+```
+
+```{r}
+ggplot(Final_Combined, aes(x = shooting)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(Final_Combined, aes(x = pace)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(Final_Combined, aes(x = passing)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(Final_Combined, aes(x = physic)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+
+ggplot(Final_Combined, aes(x = dribbling)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(Final_Combined, aes(x = defending)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+```
+```{r}
+ggplot(defender, aes(x = shooting)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(defender, aes(x = pace)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(defender, aes(x = passing)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(defender, aes(x = physic)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+
+ggplot(defender, aes(x = dribbling)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(defender, aes(x = defending)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+```
+```{r}
+ggplot(midfielder, aes(x = shooting)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(midfielder, aes(x = pace)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(midfielder, aes(x = passing)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(midfielder, aes(x = physic)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+
+ggplot(midfielder, aes(x = dribbling)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(midfielder, aes(x = defending)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+```
+```{r}
+ggplot(defender, aes(x = shooting)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(defender, aes(x = pace)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(defender, aes(x = passing)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(defender, aes(x = physic)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+
+ggplot(defender, aes(x = dribbling)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(defender, aes(x = defending)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+```
+
+```{r}
+ggplot(attacker, aes(x = shooting)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(attacker, aes(x = pace)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(attacker, aes(x = passing)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(attacker, aes(x = physic)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+
+ggplot(attacker, aes(x = dribbling)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
+
+ggplot(attacker, aes(x = defending)) + geom_histogram(fill="lightblue", color="black", bins = 30) +
+  labs(title="Distribution of Variable", x="Variable Values", y="Frequency")
 ```
 
