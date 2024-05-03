@@ -18,9 +18,33 @@ library(mosaic)
 library(tidyverse)
 library(ggplot2)
 library(gridExtra)
+library(stringr)
+library(stringi)
 ```
 
 ```{r}
-read.
+stats <- readRDS("data/player_data.rds")
+
+stats$short_name <- gsub("ø", "o", stats$short_name)
+stats$short_name <- gsub("Ø", "O", stats$short_name)
+stats$short_name <- gsub("å", "a", stats$short_name)
+stats$short_name <- gsub("Å", "A", stats$short_name)
+stats$short_name <- gsub("æ", "ae", stats$short_name)
+stats$short_name <- gsub("Æ", "AE", stats$short_name)
+
+#stats$short_name <- iconv(stats$short_name, to = "ASCII//TRANSLIT")
+
+stats$short_name <- gsub("^([A-Za-z])\\w+\\s+(\\w+)$", "\\1. \\2", stats$short_name)
+
+stats$short_name <- stri_trans_general(stats$short_name, "Latin-ASCII")
+
+write.csv(stats, file = "Final_PlayerStats")
+
+
+
+
+#stats$short_name <- gsub("[^A-Za-z0-9.\\-\\s]", "", stats$short_name)
+
+
 ```
 
