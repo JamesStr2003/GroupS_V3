@@ -42,14 +42,6 @@ We have both categorical and quantitative variables as our explanatory variables
 
 
 ## Results
-
-```{r}
-
-```
-
-	
-
-
 ### Univariate Descriptive Stats and Figures
 ```{r, echo=FALSE, results='hide'}
 #UNIVARIATE ANALYSIS
@@ -105,22 +97,20 @@ grid.arrange(ev1, ev2, ev3, ev4, ev5, ev6, ncol=3)
 
 For our univariate analysis we ran histograms to see the distribution of each non-continuous quantitative predictor variable
 
-Pace: The ratings of players' pace is normalally distributed, so we use the mean of 70.75 as a measure of center, and the standard deviation of 10.73 as a measure of spread. 
+Pace: The ratings of players' pace is normally distributed, so we use the mean of 70.75 as a measure of center, and the standard deviation of 10.73 as a measure of spread. 
 
-Shooting: The ratings of players' shooting is normalally distributed, so we use the mean of 58.7206 as a measure of center, and the standard deviation of 14.87 as a measure of spread. 
+Shooting: The ratings of players' shooting is normally distributed, so we use the mean of 58.7206 as a measure of center, and the standard deviation of 14.87 as a measure of spread. 
 
-Passing: The ratings of players' passing is normalally distributed, so we use the mean of 65.92 as a measure of center, and the standard deviation of 10.16 as a measure of spread. 
+Passing: The ratings of players' passing is normally distributed, so we use the mean of 65.92 as a measure of center, and the standard deviation of 10.16 as a measure of spread. 
 
-Dribbling: The ratings of players' dribbling  is normalally distributed, so we use the mean of 70.77 as a measure of center, and the standard deviation of 9.42 as a measure of spread. 
+Dribbling: The ratings of players' dribbling  is normally distributed, so we use the mean of 70.77 as a measure of center, and the standard deviation of 9.42 as a measure of spread. 
 
 Defending: The ratings of players' defending is left-skewed with a potential second peak, so we use the median of 66 as a measure of center, and the IQR of 29 (first quartile = 46, third quartile = 75) as a measure of spread.
 
-Physicality: The ratings of players' physicality is normalally distributed, so we use the mean of 69 as a measure of center, and the standard deviation of 9.89 as a measure of spread. 
+Physicality: The ratings of players' physicality is normally distributed, so we use the mean of 69 as a measure of center, and the standard deviation of 9.89 as a measure of spread. 
 
 ### Bivaraite Analysis
-
-
-```{r}
+```{r, echo=FALSE, results='hide'}
  a <- ggplot(players, aes(x = pace, y = value_eur)) +
   geom_point()
 
@@ -144,16 +134,175 @@ grid.arrange(a,b,c,d,e,f)
 ```
 Figure 1 : To conduct bivariate analysis for the quantitative we made scatterplots of them as predictors of market value. We saw that there seems to be positive relationships between all the variables and transfer value. In other words, as a rating for a variable goes up, so does the transfer value. However, we can also see that none of these relationships seem to be linear and instead seem to be curved. This suggests that we need to do a transformation is needed to satisfy our linearity condition  
 
-```{r}
-players2 <- select(players, "pace", "shooting", "passing", "dribbling", "defending", "physic")
+```{r, echo=FALSE, results='hide'}
+players2 <- select(players, "pace", "shooting", "passing", "dribbling", "defending", "physic", "value_eur")
 ggpairs(players2)
-
 ```
-Figure 2 : This ggpairs model shows that some of our variables within our dataset are highly correlated with eachother. This is especially true for dribbling-passing, dribbling-shooting, passing-shooting and defending-physic. This is concerning and we would need to look into running a multicollinearity test to decide which of our variables are over the threshold of multicollinearity
+Figure 2 : This ggpairs model shows that some of our variables within our dataset are highly correlated with each other. This is especially true for dribbling-passing, dribbling-shooting, passing-shooting and defending-physic. This is concerning and we would need to look into running a multicollinearity test to decide which of our variables are over the threshold of multicollinearity
 
-## Interpreting the Model
+## Initial model
+```{r, echo=FALSE, results='hide'}
+#Kitchen Sink Model 
+kitchen_sink <- lm(value_eur ~ pace + shooting + passing + physic + dribbling + defending, data = players)
 
+#Conditions 
+mplot(kitchen_sink, which = 1)
+mplot(kitchen_sink, which = 2)
 
+car::vif(kitchen_sink)
+
+#Model Summary 
+msummary(kitchen_sink)
+```
+REWRITE: We begin by looking at a kitchen sink model to get a good sense of all of our variables. There are some major issues with the kitchen sink model. The conditions for multiple linear regression are clearly not met. The residuals vs fitted plot is heteroskedastic and has a nonlinear/nonrandom pattern (which violates _ condition). The QQ plot testing normality is far less concerning as most points fall on or near our reference line, however we see the right tail strays away which is a problem. The look of our residuals vs. fitted plot confirms our suspicion that we may need to transform the data. Looking at our summary of the model there are many variables that are currently insignificant which we want to address. Some variables (name them) also have VIF's above five which raises issues of multicollinearity that we also need to address. We will try and fix this issues in our next model beginning with a transformation and then carefully selecting variables to slim down the model and hopefully raise our R^2 value. 
+
+```{r, echo=FALSE, results='hide'}
+#Adding transformation 
+players <- players |>
+  mutate(log_value = log(value_eur))
+
+#Transformed Kitchen Sink Model 
+log_kitchen_sink <- lm(log_value ~ pace + shooting + passing + physic + dribbling + defending, data = players)
+
+#Conditions 
+mplot(log_kitchen_sink, which = 1)
+mplot(log_kitchen_sink, which = 2)
+
+car::vif(log_kitchen_sink)
+
+#Model Summary 
+msummary(log_kitchen_sink)
+```
+REWRITE: We found the log transformation works best for our data. We immediately see and improvement in conditions. The residuals vs fitted plot still shows some heteroskadisticity (this just seems to be the pattern of the data. There aren't any majorly concerning points. Overall there is a band of randomly distributed points and these plots don't raise enough concern so we proceed with the log transformation. The QQ plot also looks really good. The tails do veer away from the reference line but not nearly as drastically as before. With this transformation we also see a much higher R^2 (state value and compare to past). We also see many more of our variables are now significant. A lot of them have VIFS greater than 5 so we will use a best subsets ___ (I don't remember what if this is a test or not) to narrow down our varaibles and see if there if we can reduce multicollinearity and improve R^2. 
+
+```{r, echo=FALSE, results='hide'}
+best <- regsubsets(log_value ~ pace + shooting + passing + physic + dribbling + defending, data = players, nbest = 1)
+with(summary(best), data.frame(rsq, cp, outmat))
+```
+REWRITE: Looking at the best subsets output it looks as though 4 variables will give us the best model. Adding more than five variables doesn't significantly improve the R^2 or the Mallows CP which have values of __ and __. Additionally 4 variables is not overly complex (in terms of numbers of variables). So we continue with a model that contains (state variables). 
+
+```{r, echo=FALSE, results='hide'}
+#Four variable model
+mod <- lm(log_value ~ passing + physic + dribbling + pace, data = players)
+
+#Conditions 
+mplot(mod, which = 1)
+mplot(mod, which = 2)
+
+car::vif(mod)
+
+#Model Summary 
+msummary(mod)
+```
+REWRITE: The model looks good. All variables are significant. Conditions look good as well. Still have high collinearity (passing and dribbling). We reference back to best subsets and remove pace. 
+
+```{r, echo=FALSE, results='hide'}
+#Five variable model
+mod2 <- lm(log_value ~ passing + physic + dribbling, data = players)
+
+#Conditions 
+mplot(mod2, which = 1)
+mplot(mod2, which = 2)
+
+car::vif(mod2)
+
+#Model Summary 
+msummary(mod2)
+```
+NEED TO EXPLAIN FINDINGS OF THIS MODEL. 
+
+REWRITE: We realized that different players have different skills based on position despite having similar valuations. We figured including a variable relating to position could aid in making the model more accurate. 
+
+```{r, echo=FALSE, results='hide'}
+#Boxplots
+g <- ggplot(players, aes(x = player_group, y = log_value)) +  #SHOULD WE USE LOG OR NORMAL VALUE 
+  geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(x = "Player Group", y = "log_value Euro") +
+  ggtitle("Boxplot of log_value Euro by Player Group")
+
+h <- ggplot(players, aes(x = player_group, y = dribbling)) +
+  geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(x = "Player Group", y = "dribbling rating") +
+  ggtitle("TITLE LATER")
+
+i <- ggplot(players, aes(x = player_group, y = passing)) +
+  geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(x = "Player Group", y = "passing rating") +
+  ggtitle("TITLE LATER")
+
+j <- ggplot(players, aes(x = player_group, y = pace)) +
+  geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(x = "Player Group", y = "pace raing") +
+  ggtitle("TITLE LATER")
+
+k <- ggplot(players, aes(x = player_group, y = physic)) +
+  geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(x = "Player Group", y = "physicality rating") +
+  ggtitle("TITLE LATER")
+
+l <- ggplot(players, aes(x = player_group, y = shooting)) +
+  geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(x = "Player Group", y = "shooting rating") +
+  ggtitle("TITLE LATER")
+
+m <- ggplot(players, aes(x = player_group, y = defending)) +
+   geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(x = "Player Group", y = "defending rating") +
+  ggtitle("TITLE LATER")
+
+grid.arrange(g,h,i,j,k,l,m)
+```
+```{r, echo=FALSE, results='hide'}
+#Kitchen sink model with player_group
+mod3 <- lm(log_value ~ passing + physic + dribbling + pace + physic + shooting + player_group, data = players)
+
+#Conditions 
+mplot(mod3, which = 1)
+mplot(mod3, which = 2)
+
+car::vif(mod3)
+
+#Model Summary 
+msummary(mod3)
+
+#Best Subsets
+best3 <- regsubsets(log_value ~ passing + physic + dribbling + pace + physic + shooting + player_group, data = players, nbest = 1)
+with(summary(best3), data.frame(rsq, cp, outmat))
+```
+REWRITE: Bringing back all varaibles to this new kitchen sink we see a lot of similar results to our previous kitchen sink model. The plots for conditions are decent. There are issues of VIFs> 5 and some insignificant variables. We'll use best subsets again to simplify the model. Looking at best subsets a five variable model seems to be the best with R^2 and cp of _. mallows cp increases once we get past 6 variables and a five variable model won't be too complex. We'll build a model using (state variables). 
+
+```{r, echo=FALSE, results='hide'}
+players <- players |>
+  mutate(is_midfielder = ifelse(player_positions %in% c("LM", "LCM", "CM", "RCM", "RM", "CDM", "CAM"), 1, 0))
+
+#Model with player_groupMidfielder
+mod4 <- lm(log_value ~ passing + physic + dribbling + pace + is_midfielder, data = players)
+
+#Conditions 
+mplot(mod4, which = 1)
+mplot(mod4, which = 2)
+
+car::vif(mod4)
+
+#Model Summary 
+msummary(mod4)
+```
+REWRITE: Conditions look good and all variables significant but still have high VIFs so we'll refer to kitchen sink model and get rid of a variable (state which).
+
+```{r, echo=FALSE, results='hide'}
+#Final Model 
+mod4 <- lm(log_value ~ passing + physic + dribbling + is_midfielder, data = players)
+
+#Conditions 
+mplot(mod4, which = 1)
+mplot(mod4, which = 2)
+
+car::vif(mod4)
+
+#Model Summary 
+msummary(mod4)
+```
+INTERPRET THIS MODEL. 
 
 ## Conclusion 
 

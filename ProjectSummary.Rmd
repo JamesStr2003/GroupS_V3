@@ -143,16 +143,16 @@ car::vif(bigkitch)
 
 #smaller models? 
 attackers <- players3 %>% 
-  filter(player_group == "Attacker")
+  filter(player_group == "Midfielder")
 
-bigkitch1 <- lm(log_val ~ passing + shooting + pace + physic + dribbling + defending,  data = players3)
+bigkitch1 <- lm(log_val ~ passing + pace + physic + dribbling,  data = players3)
 
 msummary(bigkitch1)
 
 mplot(bigkitch1, which = 1)
 mplot(bigkitch1, which = 2)
 
-best5 <- regsubsets(log_val ~ pace + shooting + passing + physic + dribbling + defending, data = attackers, nbest = 1)
+best5 <- regsubsets(log_val ~ pace +  passing + physic + dribbling, data = attackers, nbest = 1)
 with(summary(best5), data.frame(rsq, cp, outmat))
 
 car::vif(bigkitch1)
@@ -162,8 +162,4 @@ defenders <- players %>%
 
 midfielders <- players %>% 
   filter(player_group == "Midfeilder")
-
-
-
-
 ```
